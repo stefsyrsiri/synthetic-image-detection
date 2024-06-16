@@ -2,6 +2,6 @@
 
 This is our project for the Deep Learning course of the MSc in `Data Science`.
 
-- Stefania Syrsiri & Anna Galanopoulou
+Stefania Syrsiri & Anna Galanopoulou
 
 Demo loading... 😎
