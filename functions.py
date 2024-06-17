@@ -69,14 +69,14 @@ class ConvNet(nn.Module):
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 1)  # 1 output neuron
         
-    def forward(self, x):
+    def forward(self, x): # Input x is passed through each layer sequentially
         # Convolutional layers with ReLU and pooling
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
         
         # Flatten the tensor before the fully connected layers
-        x = x.view(-1, 128 * 28 * 28)  # Flattening
+        x = x.view(-1, 128 * 28 * 28)  # Flattening / Reshapes the output of the second convolutional layer to be compatible with the fully connected layers
         
         # Fully connected layers with ReLU
         x = self.dropout(x)
@@ -118,9 +118,9 @@ def train_model(model, train_loader, val_loader, n_epochs=20, learning_rate=0.00
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Training loop
-    for epoch in range(n_epochs):
+    for epoch in range(n_epochs): # Loop over the dataset multiple times
         model.train()
-        train_loss = 0.0
+        train_loss = 0.0 # Initialized to zero at the beginning of each epoch to keep track of the cumulative loss.
         train_acc = 0.0  # Initialize variable for training accuracy
         train_f1 = 0.0  # Initialize variable for training F1-score
         for i, (train_images, train_labels) in enumerate(train_loader):
@@ -131,11 +131,18 @@ def train_model(model, train_loader, val_loader, n_epochs=20, learning_rate=0.00
             train_labels = train_labels.view(-1, 1).float()  # Ensure labels are of shape [batch_size, 1]
 
             # Compute loss
+            # The loss between the model's outputs and the actual labels.
+            # Computed using Binary Cross Entropy loss.
             loss = criterion(outputs, train_labels)
             
             # Backprop and update weights
+            # This clears the gradients of all optimized parameters.
+            # Gradients need to be reset to zero before backpropagation, because PyTorch accumulates gradients on subsequent backward passes.
+            # Computes the gradient of the loss with respect to the model parameters (weights and biases) via backpropagation.
             optimizer.zero_grad()
             loss.backward()
+            # This updates the model parameters based on the computed gradients.
+            # The optimizer adjusts the parameters to minimize the loss.
             optimizer.step()
             
             train_loss += loss.item()
