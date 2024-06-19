@@ -112,113 +112,84 @@ def evaluate_model(model, data, labels, metric):
 
 
 def train_model(model, train_loader, val_loader, n_epochs=20, learning_rate=0.001):
-    train_losses, val_losses, train_accuracy, val_accuracy, train_f1, val_f1 = [], [], [], [], [], []
+    train_losses, val_losses, train_accuracies, val_accuracies, train_f1s, val_f1s = [], [], [], [], [], []
 
     criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Training loop
-    for epoch in range(n_epochs): # Loop over the dataset multiple times
+    for epoch in range(n_epochs):  # Loop over the dataset multiple times
         model.train()
-        train_loss = 0.0 # Initialized to zero at the beginning of each epoch to keep track of the cumulative loss.
-        train_acc = 0.0  # Initialize variable for training accuracy
-        train_f1 = 0.0  # Initialize variable for training F1-score
-        for i, (train_images, train_labels) in enumerate(train_loader):
+        train_loss = 0.0
+        train_acc = 0.0
+        train_f1 = 0.0
+        total_train_batches = len(train_loader)
+        
+        for train_images, train_labels in train_loader:
             # Forward pass
             outputs = model(train_images)
             
             # Reshape labels to match the output shape
-            train_labels = train_labels.view(-1, 1).float()  # Ensure labels are of shape [batch_size, 1]
+            train_labels = train_labels.view(-1, 1).float()
 
             # Compute loss
-            # The loss between the model's outputs and the actual labels.
-            # Computed using Binary Cross Entropy loss.
             loss = criterion(outputs, train_labels)
             
             # Backprop and update weights
-            # This clears the gradients of all optimized parameters.
-            # Gradients need to be reset to zero before backpropagation, because PyTorch accumulates gradients on subsequent backward passes.
-            # Computes the gradient of the loss with respect to the model parameters (weights and biases) via backpropagation.
             optimizer.zero_grad()
             loss.backward()
-            # This updates the model parameters based on the computed gradients.
-            # The optimizer adjusts the parameters to minimize the loss.
             optimizer.step()
             
             train_loss += loss.item()
-        
-            # Calculate accuracy
-            # Assuming your model output is a probability between 0 and 1
-            # and your labels are binary (0 or 1)
+
+            # Calculate accuracy and F1-score
             predictions = (outputs > 0.5).float()  # Apply threshold to convert probabilities to binary predictions
-            correct = (predictions == train_labels).sum().item()  # Count correct predictions
-
             train_acc += accuracy_score(train_labels.cpu().numpy(), predictions.cpu().numpy())
-
-            # Calculate F1-score (macro average)
             train_f1 += f1_score(train_labels.cpu().numpy(), predictions.cpu().numpy(), average='macro')
-
-            # Calculate average epoch accuracy and F1-score
-            avg_train_acc = train_acc / len(train_loader)
-            avg_train_f1 = train_f1 / len(train_loader)  # Average F1-score across batches
-
-        # Append average training loss for this epoch
-        train_losses.append(train_loss / len(train_loader))
-        # train_accuracy.append(train_acc / len(train_loader))
-        # train_f1.append(train_f1 / len(train_loader))
         
+        # Calculate average training loss, accuracy, and F1-score for the epoch
+        avg_train_loss = train_loss / total_train_batches
+        avg_train_acc = train_acc / total_train_batches
+        avg_train_f1 = train_f1 / total_train_batches
+        
+        # Append average training metrics for this epoch
+        train_losses.append(avg_train_loss)
+        train_accuracies.append(avg_train_acc)
+        train_f1s.append(avg_train_f1)
+
         # Validation step
         model.eval()
         val_loss = 0.0
         val_acc = 0.0
         val_f1 = 0.0
-        with torch.no_grad():  
+        total_val_batches = len(val_loader)
+        
+        with torch.no_grad():
             for val_images, val_labels in val_loader:
                 outputs = model(val_images)
                 val_labels = val_labels.view(-1, 1).float()
                 loss = criterion(outputs, val_labels)
                 val_loss += loss.item()
                 
-                # Calculate accuracy
-                # Assuming your model output is a probability between 0 and 1
-                # and your labels are binary (0 or 1)
+                # Calculate accuracy and F1-score
                 predictions = (outputs > 0.5).float()  # Apply threshold to convert probabilities to binary predictions
-                correct = (predictions == val_labels).sum().item()  # Count correct predictions
-                batch_acc = correct / val_labels.size(0)  # Calculate accuracy for the batch
-
                 val_acc += accuracy_score(val_labels.cpu().numpy(), predictions.cpu().numpy())
-
-                # Calculate F1-score (macro average)
                 val_f1 += f1_score(val_labels.cpu().numpy(), predictions.cpu().numpy(), average='macro')
-
-                # Calculate average epoch accuracy and F1-score
-                avg_val_acc = val_acc / len(val_loader)
-                avg_val_f1 = val_f1 / len(val_loader)  # Average F1-score across batches
-
-        val_loss /= len(val_loader)
-        val_losses.append(val_loss)
-        # val_acc /= len(val_loader)
-        # val_accuracy.append(val_acc)
-        # val_f1 /= len(val_loader)
-        # val_f1.append(val_f1)
         
-        # # Compute Accuracy scores
-        # train_accuracy_score = evaluate_model(model, train_loader, metric='accuracy')
-        # val_accuracy_score = evaluate_model(model, val_loader, metric='accuracy')
-
-        # train_accuracy.append(train_accuracy_score)
-        # val_accuracy.append(val_accuracy_score)
-
-        # # Compute F1 scores
-        # train_f1_score = evaluate_model(model, train_loader, metric='f1')
-        # val_f1_score = evaluate_model(model, val_loader, metric='f1')
+        # Calculate average validation loss, accuracy, and F1-score for the epoch
+        avg_val_loss = val_loss / total_val_batches
+        avg_val_acc = val_acc / total_val_batches
+        avg_val_f1 = val_f1 / total_val_batches
         
-        # train_f1.append(train_f1_score)
-        # val_f1.append(val_f1_score)
-
-        print(f'Epoch [{epoch+1}/{n_epochs}] - Training Loss: {train_losses[-1]:.4f}, Validation Loss: {val_loss:.4f}, , Training Accuracy: {avg_train_acc:.4f}, Validation Accuracy: {avg_val_acc:.4f}, Training F1: {avg_train_f1:.4f}, Validation F1: {avg_val_f1:.4f}')
+        # Append average validation metrics for this epoch
+        val_losses.append(avg_val_loss)
+        val_accuracies.append(avg_val_acc)
+        val_f1s.append(avg_val_f1)
+        
+        print(f'Epoch [{epoch+1}/{n_epochs}] - Training Loss: {avg_train_loss:.4f}, Validation Loss: {avg_val_loss:.4f}, Training Accuracy: {avg_train_acc:.4f}, Validation Accuracy: {avg_val_acc:.4f}, Training F1: {avg_train_f1:.4f}, Validation F1: {avg_val_f1:.4f}')
 
     print('Training complete')
+
 
     import matplotlib.pyplot as plt
     plt.figure(figsize=(12, 6))
