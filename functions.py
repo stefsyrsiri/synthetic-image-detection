@@ -60,6 +60,7 @@ class ConvNet(nn.Module):
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1) ##added 20-06
         self.dropout = nn.Dropout(0.1)
         # Pooling layer
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
@@ -74,6 +75,7 @@ class ConvNet(nn.Module):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
+        x = self.pool(F.relu(self.conv4(x))) ##added 20-06
         
         # Flatten the tensor before the fully connected layers
         x = x.view(-1, 128 * 28 * 28)  # Flattening / Reshapes the output of the second convolutional layer to be compatible with the fully connected layers
@@ -84,6 +86,16 @@ class ConvNet(nn.Module):
         x = self.dropout(x)
         x = F.relu(self.fc2(x))
         x = torch.sigmoid(self.fc3(x))  # Sigmoid activation for binary classification
+
+        # Fully connected layers with ReLU
+        x = self.dropout(x)
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc3(x))        
+        x = torch.sigmoid(self.fc4(x))  # Sigmoid activation for binary classification
+        
         return x
 
 
