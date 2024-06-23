@@ -126,9 +126,6 @@ print(model)
 
 # Function to evaluate the model
 def evaluate_model(model, data, labels, metric):
-
-# Function to evaluate the model
-def evaluate_model(model, data, labels, metric):
     """
         Evaluates the trained neural network based on the chosen evaluation metric.
         
