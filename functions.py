@@ -51,8 +51,6 @@ def transform_set(set_type: str):
         
     return transformation
 
-
-# Neural net architecture
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
@@ -111,10 +109,7 @@ class ConvNet(nn.Module):
         x = torch.sigmoid(self.fc3(x))  # Sigmoid activation for binary classification
 
         # Fully connected layers with ReLU
-        x = self.dropout(x)
-        x = F.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = F.relu(self.fc2(x))
+	@@ -95,9 +118,11 @@ def forward(self, x): # Input x is passed through each layer sequentially
         x = self.dropout(x)
         x = F.relu(self.fc3(x))        
         x = torch.sigmoid(self.fc4(x))  # Sigmoid activation for binary classification
