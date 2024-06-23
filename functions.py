@@ -56,35 +56,58 @@ def transform_set(set_type: str):
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
+
         # Convolutional layers
         self.conv1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
         self.conv4 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1) ##added 20-06
         self.dropout = nn.Dropout(0.1)
+
+        # Dropout layers
+        self.dropout1 = nn.Dropout(0.25)  # Dropout with 25% probability
+        self.dropout2 = nn.Dropout(0.5)   # Dropout with 50% probability
+
         # Pooling layer
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+
         # Fully connected layers
         # self.fc1 = nn.Linear(128 * 4 * 4, 256)  # Assuming input images are 32x32
         self.fc1 = nn.Linear(128 * 28 * 28, 256)
+        self.fc1 = nn.Linear(128 * 28 * 28, 256)  # Assuming input images are 224x224
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 1)  # 1 output neuron
-        
+        self.fc3 = nn.Linear(128, 1)  # 1 output neuron for binary classification
+
     def forward(self, x): # Input x is passed through each layer sequentially
+    def forward(self, x):
         # Convolutional layers with ReLU and pooling
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = self.pool(F.relu(self.conv3(x)))
         x = self.pool(F.relu(self.conv4(x))) ##added 20-06
-        
+        x = self.pool(F.relu(self.conv1(x)))  # First conv layer + ReLU + max pooling
+        x = self.dropout1(x)  # Dropout after first conv layer
+
+        x = self.pool(F.relu(self.conv2(x)))  # Second conv layer + ReLU + max pooling
+        x = self.dropout1(x)  # Dropout after second conv layer
+
+        x = self.pool(F.relu(self.conv3(x)))  # Third conv layer + ReLU + max pooling
+        x = self.dropout1(x)  # Dropout after third conv layer
+
         # Flatten the tensor before the fully connected layers
         x = x.view(-1, 128 * 28 * 28)  # Flattening / Reshapes the output of the second convolutional layer to be compatible with the fully connected layers
-        
+        x = x.view(-1, 128 * 28 * 28)  # Flatten the output of the third conv layer
+
         # Fully connected layers with ReLU
         x = self.dropout(x)
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
         x = F.relu(self.fc2(x))
+        x = self.dropout2(x)  # Dropout before the first fully connected layer
+        x = F.relu(self.fc1(x))  # First fully connected layer + ReLU
+        x = self.dropout2(x)  # Dropout before the second fully connected layer
+        x = F.relu(self.fc2(x))  # Second fully connected layer + ReLU
         x = torch.sigmoid(self.fc3(x))  # Sigmoid activation for binary classification
 
         # Fully connected layers with ReLU
@@ -95,9 +118,14 @@ class ConvNet(nn.Module):
         x = self.dropout(x)
         x = F.relu(self.fc3(x))        
         x = torch.sigmoid(self.fc4(x))  # Sigmoid activation for binary classification
-        
+
         return x
 
+model = ConvNet()
+print(model)  
+
+# Function to evaluate the model
+def evaluate_model(model, data, labels, metric):
 
 # Function to evaluate the model
 def evaluate_model(model, data, labels, metric):
