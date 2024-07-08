@@ -1,4 +1,4 @@
-import torch
+_import torch
 from torchvision import datasets, transforms, models
 from torchvision.transforms import InterpolationMode, v2
 from torch.utils.data import DataLoader, Subset
@@ -113,6 +113,20 @@ class ConvNet(nn.Module):
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------  
 
 def train_model(model, train_loader, val_loader, criterion, weight_decay=1e-5, n_epochs=20, learning_rate=0.001, patience=5, tl=False):
+    """
+    This function trains a model given a neural network architecture. It uses slightly different argument values based on whether it is a model being trained from the start or a pre-trained model being fine-tuned. At the end of the training a loss and f1-score charts are plotted.
+
+        Args:
+            model: A model with a predefined architecture to be trained.
+            train_loader: The training set data loader.
+            val_loader: The validation set data loader.
+            criterion: The criterion based on which the model will evaluate its answers (e.g. Cross Entropy Loss)
+            weight_decay (float): A penalty for the model's weights for reguralization. Default is 1e-5.
+            n_epochs (int): The number of times (epochs) the model will loop through the entire dataset for training. Default is 20.
+            learning_rate (float): The rate the model is being trained at. Default is 0.001.
+            patience (int): The number of epochs the model should wait for the improvement of the average validation loss. Default is 5.
+            tl (bool): A boolean that sets whether the training session regards transfer learning. Default is False.
+    """
     train_losses, val_losses, train_accuracies, val_accuracies, train_f1s, val_f1s = [], [], [], [], [], []
 
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
@@ -261,6 +275,14 @@ def train_model(model, train_loader, val_loader, criterion, weight_decay=1e-5, n
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------  
 
 def evaluate_model(model, test_loader):
+    """
+    This function evaluates a trained model against a test data loader. At the end of the evaluation a confusion matrix and classification report are shown.
+
+        Args:
+            model: A model with a predefined architecture to be trained.
+            test_loader: The test set data loader.
+    """
+    
     model.eval()
     test_loss = 0.0
     test_acc = 0.0
@@ -322,16 +344,23 @@ def evaluate_model(model, test_loader):
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Predict labels for demo
-def predict(input_image):
+def demo_predict(input_image):
+    """
+    This function transforms a given image following the exact transformation the validation set had during the training of the model and then predicts its label.
+
+        Args:
+            input_image: An image that is getting in the demo from the test set, from the user's webcam or device.
+    """
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
     ])
     input_image = transform(input_image).unsqueeze(0)
-    
+    input_image = input_image.to(device)
+
     with torch.no_grad():
-        prediction = model(input_image)
+        prediction = model_demo(input_image)
         confidence = torch.sigmoid(prediction).item()
-        label = 'Fake' if confidence > 0.5 else 'Real'
-    
+        label = 'Fake' if confidence < 0.5 else 'Real'
+
     return label
