@@ -269,9 +269,12 @@ def evaluate_model(model, test_loader):
     labels_all = []
 
     criterion = nn.BCELoss()
-
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    
     with torch.no_grad():
         for test_images, test_labels in test_loader:
+            test_images, test_labels = test_images.to(device), test_labels.to(device)
             outputs = model(test_images)
             test_labels = test_labels.view(-1, 1).float()
             loss = criterion(outputs, test_labels)
