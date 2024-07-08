@@ -276,6 +276,9 @@ def evaluate_model(model, test_loader):
         for test_images, test_labels in test_loader:
             test_images, test_labels = test_images.to(device), test_labels.to(device)
             outputs = model(test_images)
+            
+            # Apply sigmoid activation to the outputs
+            outputs = torch.sigmoid(outputs)
             test_labels = test_labels.view(-1, 1).float()
             loss = criterion(outputs, test_labels)
             test_loss += loss.item()
