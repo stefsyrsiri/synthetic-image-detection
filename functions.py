@@ -83,7 +83,7 @@ class ConvNet(nn.Module):
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
 
         # Fully connected layers
-        self.fc1 = nn.Linear(128 * 28 * 28, 256)  # Assuming input images are 224x224
+        self.fc1 = nn.Linear(128 * 28 * 28, 256)  # Input images are 224x224 (training set transformation)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 1)  # 1 output neuron for binary classification
 
@@ -318,7 +318,7 @@ def evaluate_model(model, test_loader):
 
     print(f'Test Loss: {avg_test_loss:.4f}, Test Accuracy: {avg_test_acc:.4f}, Test F1-score: {avg_test_f1:.4f}')
 
-       # Convert lists to numpy arrays for confusion matrix calculation
+    # Convert lists to numpy arrays for confusion matrix calculation
     predictions_all = np.array(predictions_all)
     labels_all = np.array(labels_all)
 
