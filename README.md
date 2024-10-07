@@ -1,4 +1,4 @@
-# AI-Generated Synthetic Images Detection
+# AI-Generated Synthetic Images Detection | CNN Classifier
 ![download (1)](https://github.com/user-attachments/assets/21f50705-ef92-4106-b776-157810235b6c)
 
 ### Overview
@@ -9,6 +9,7 @@ In this project, we focus on image generation, which can have multiple societal 
 ### Table of Contents
 - [Files](#files)
 - [Dataset](#dataset)
+- [Results](#results)
 - [Authors](#authors)
 - [License](#license)
 
@@ -18,6 +19,9 @@ In this project, we focus on image generation, which can have multiple societal 
 
 ### Dataset
 <a href="https://www.kaggle.com/datasets/birdy654/cifake-real-and-ai-generated-synthetic-images">CIFAKE: Real and AI-Generated Synthetic Images</a> is a comprehensive collection of 60,000 synthetically-generated images and 60,000 real images (collected from CIFAR-10). The dataset contains two classes, labelled as "REAL" and "FAKE". There are 100,000 images for training (50k per class) and 20,000 for testing (10k per class). Since the training an test sets have 50% of each class, there is no class imbalance that needs to be taken care of for our binary classification task.
+
+### Results
+![Screenshot 2024-10-07 132401](https://github.com/user-attachments/assets/880ba559-25ee-4de0-8530-8a21d2cb9725)
 
 ### Authors
 - Stefania Syrsiri - [LinkedIn](https://www.linkedin.com/in/stefania-syrsiri/) | [GitHub](https://github.com/stefsyrsiri)
